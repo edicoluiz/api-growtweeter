@@ -6,15 +6,13 @@
     "version": "1.0.0"
   },
   "servers": [
-    {
-      "url": "http://localhost:8081",
-      "description": "API Localhost"
-    },
-    {
-      "url": "https://exemplo.growtweeter.com",
-      "description": "API Produção"
-    }
-  ],
+  {
+    "url": "http://localhost:3000"
+  },
+  {
+    "url": "https://api-growtweeter-edicodewes3.onrender.com"
+  }
+],
   "tags": [
     {
       "name": "Users",
