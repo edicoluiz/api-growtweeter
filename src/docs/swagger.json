@@ -1,1048 +1,366 @@
+
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "GrowTweeter api",
-    "description": "Recursos para o controle e gerenciamentos da api do growtweeter",
+    "title": "API GrowTweeter",
+    "description": "Recursos para controle e gerenciamento da API do GrowTweeter",
     "version": "1.0.0"
   },
   "servers": [
-  {
-    "url": "http://localhost:3000"
-  },
-  {
-    "url": "https://api-growtweeter-edicodewes3.onrender.com"
-  }
-],
+    {"url": "http://localhost:3000", "description": "Local"},
+    {"url": "https://api-growtweeter-edicodewes3.onrender.com", "description": "Render"}
+  ],
   "tags": [
-    {
-      "name": "Users",
-      "description": "Todas as funcionalidades para usuários"
-    },
-    {
-      "name": "Login",
-      "description": "Todas as funcionalidades para efetuar login"
-    },
-    {
-      "name": "Tweets",
-      "description": "Todas as funcionalidades para tweets"
-    }
+    {"name": "Users", "description": "Funcionalidades para usuários"},
+    {"name": "Login", "description": "Autenticação"},
+    {"name": "Tweets", "description": "Funcionalidades para tweets"},
+    {"name": "Likes", "description": "Curtidas"},
+    {"name": "Replies", "description": "Respostas"},
+    {"name": "Followers", "description": "Seguidores"},
+    {"name": "Feed", "description": "Feed"}
   ],
   "paths": {
     "/user": {
       "get": {
         "tags": ["Users"],
-        "summary": "Retorna a lista de usuários cadastrados",
-        "description": "Listagem dos usuários cadastrados",
-        "parameters": [],
+        "summary": "Listar usuários",
         "responses": {
-          "409": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Já existe um usuário com esse username, digite um diferente!"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Json com a lista de usuários",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Usuário listado com sucesso!"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/User"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "200": {"description": "Usuários listados com sucesso"},
+          "500": {"description": "Erro inesperado"}
         }
       },
       "post": {
         "tags": ["Users"],
-        "summary": "Retorna o usuário cadastrado",
-        "description": "Listagem do usuário cadastrado",
-        "parameters": [
-          {
-            "in": "body",
-            "name": "name",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define o nome do usuário"
-          },
-          {
-            "in": "body",
-            "name": "email",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define o e-mail do usuário"
-          },
-          {
-            "in": "body",
-            "name": "username",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define o nome de usuário"
-          },
-          {
-            "in": "body",
-            "name": "password",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define a senha do usuário"
-          }
-        ],
+        "summary": "Criar usuário",
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreateUser"}}}
+        },
         "responses": {
-          "201": {
-            "description": "Json de um usuário",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Usuário criado com sucesso!"
-                    },
-                    "data": {
-                      "type": "object",
-                      "items": {
-                        "$ref": "#/components/schemas/User"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Já existe esse e-mail/username cadastrado, por gentileza, digite um diferente!"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Ocorreu um erro inesperado."
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "200": {"description": "Usuário criado com sucesso"},
+          "201": {"description": "Usuário criado com sucesso"},
+          "400": {"description": "Dados inválidos"},
+          "409": {"description": "E-mail ou username já cadastrado"},
+          "500": {"description": "Erro inesperado"}
         }
-      },
+      }
+    },
+    "/user/{id}": {
       "put": {
         "tags": ["Users"],
-        "summary": "Retorna o usuário atualizado",
-        "description": "Retorna o usuário atualizado",
-        "parameters": [
-          {
-            "in": "params",
-            "name": "id",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define o identificador do usuário"
-          },
-          {
-            "in": "body",
-            "name": "name",
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "description": "Define o nome do usuário"
-          },
-          {
-            "in": "body",
-            "name": "username",
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "description": "Define o nome de usuário do usuário"
-          },
-          {
-            "in": "body",
-            "name": "password",
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "description": "Define a senha do usuário"
-          }
-        ],
+        "summary": "Atualizar usuário",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {"$ref": "#/components/schemas/UpdateUser"}}}
+        },
         "responses": {
-          "200": {
-            "description": "Json de um usuário",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Usuário atualizado com sucesso"
-                    },
-                    "data": {
-                      "type": "object",
-                      "items": {
-                        "$ref": "#/components/schemas/User"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Usuário não encontrado."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Já existe um usuário com esse username, digite um diferente!!"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Ocorreu um erro inesperado."
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "200": {"description": "Usuário atualizado com sucesso"},
+          "400": {"description": "UUID inválido"},
+          "404": {"description": "Usuário não encontrado"},
+          "409": {"description": "Username já cadastrado"},
+          "500": {"description": "Erro inesperado"}
         }
       },
       "delete": {
         "tags": ["Users"],
-        "summary": "Retorna o usuário deletado",
-        "description": "Retorna o usuário deletado",
-        "parameters": [
-          {
-            "in": "params",
-            "name": "id",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define o identificador do usuário"
-          }
-        ],
+        "summary": "Excluir usuário",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
         "responses": {
-          "200": {
-            "description": "Json de um usuário",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Usuário deletado com sucesso!"
-                    },
-                    "data": {
-                      "type": "object",
-                      "items": {
-                        "$ref": "#/components/schemas/User"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Usuário não encontrado."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Ocorreu um erro inesperado."
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "200": {"description": "Usuário deletado com sucesso"},
+          "400": {"description": "UUID inválido"},
+          "404": {"description": "Usuário não encontrado"},
+          "500": {"description": "Erro inesperado"}
         }
       }
     },
-    "/auth": {
+    "/auth/signin": {
       "post": {
         "tags": ["Login"],
-        "summary": "Retorna o token do usuário logado",
-        "description": "Realiza o login do Usuário",
-        "parameters": [
-          {
-            "in": "body",
-            "name": "email",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define o e-mail do usuário."
-          },
-          {
-            "in": "body",
-            "name": "username",
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "description": "Define o username do usuário."
-          },
-          {
-            "in": "body",
-            "name": "password",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define a senha do usuário"
-          }
-        ],
+        "summary": "Login do usuário",
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Login"}}}
+        },
         "responses": {
-          "200": {
-            "description": "Json com o token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Usuário autenticado"
-                    },
-                    "authToken": {
-                      "type": "string",
-                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-                    },
-                    "data": {
-                      "type": "object",
-                      "items": {
-                        "$ref": "#/components/schemas/User"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Credencias inválidas"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Ocorreu um erro inesperado."
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "200": {"description": "Usuário autenticado"},
+          "401": {"description": "Credenciais inválidas"},
+          "500": {"description": "Erro inesperado"}
         }
       }
     },
     "/tweet": {
-      "post": {
-        "tags": ["Tweets"],
-        "summary": "Retorna o Tweet cadastrado",
-        "description": "Retorna o Tweet cadastrado",
-        "parameters": [
-          {
-            "in": "body",
-            "name": "userId",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define o identificador do usuário logado"
-          },
-          {
-            "in": "body",
-            "name": "content",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define o conteudo do tweet"
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Json de um tweet",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Tweet cadastrado com sucesso"
-                    },
-                    "data": {
-                      "type": "object",
-                      "items": {
-                        "$ref": "#/components/schemas/Tweets"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Token é inválido"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Ocorreu um erro inesperado."
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
       "get": {
         "tags": ["Tweets"],
-        "summary": "Retorna a lista dos tweets cadastrados",
-        "description": "Uma descrição opcional",
+        "summary": "Listar tweets",
+        "security": [{"bearerAuth": []}],
         "parameters": [
-          {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer"
-            },
-            "required": false,
-            "description": "Define o limite de registros de tweets a serem listados"
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "schema": {
-              "type": "integer"
-            },
-            "required": false,
-            "description": "Define a página de registros de tweets a ser mostrada"
-          }
+          {"name": "limit", "in": "query", "required": false, "schema": {"type": "integer", "example": 10}},
+          {"name": "page", "in": "query", "required": false, "schema": {"type": "integer", "example": 1}}
         ],
         "responses": {
-          "200": {
-            "description": "Json com a lista de tweets",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Tweets listados com sucesso"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Tweets"
-                      }
-                    },
-                    "pagination": {
-                      "$ref": "#/components/schemas/Pagination"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Ocorreu um erro inesperado."
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "200": {"description": "Tweets listados com sucesso"},
+          "401": {"description": "Token inválido"},
+          "500": {"description": "Erro inesperado"}
         }
       },
+      "post": {
+        "tags": ["Tweets"],
+        "summary": "Criar tweet",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreateTweet"}}}
+        },
+        "responses": {
+          "200": {"description": "Tweet cadastrado com sucesso"},
+          "201": {"description": "Tweet cadastrado com sucesso"},
+          "400": {"description": "Informe um conteúdo para o Tweet"},
+          "401": {"description": "Token inválido"},
+          "500": {"description": "Erro inesperado"}
+        }
+      }
+    },
+    "/tweet/{id}": {
       "put": {
         "tags": ["Tweets"],
-        "summary": "Retorna o tweet atualizado",
-        "description": "Retorna o tweet atualizado",
-        "parameters": [
-          {
-            "in": "params",
-            "name": "tweetId",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define o identificador do tweet"
-          },
-          {
-            "in": "body",
-            "name": "userId",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define o identificador do usuário logado"
-          },
-          {
-            "in": "body",
-            "name": "content",
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "description": "Define o conteudo do tweet"
-          }
-        ],
+        "summary": "Atualizar tweet",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {"$ref": "#/components/schemas/UpdateTweet"}}}
+        },
         "responses": {
-          "200": {
-            "description": "Json de um tweet",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Tweet atualizado com sucess"
-                    },
-                    "data": {
-                      "type": "object",
-                      "items": {
-                        "$ref": "#/components/schemas/Tweets"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "UUID inválido"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Token inválido"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Tweet não encontrado"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Ocorreu um erro inesperado."
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "200": {"description": "Tweet atualizado com sucesso"},
+          "400": {"description": "UUID inválido"},
+          "401": {"description": "Token inválido"},
+          "404": {"description": "Tweet não encontrado"},
+          "500": {"description": "Erro inesperado"}
         }
       },
       "delete": {
         "tags": ["Tweets"],
-        "summary": "Retorna o tweet deletado",
-        "description": "Uma descrição opcional",
+        "summary": "Apagar tweet",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
+        "responses": {
+          "200": {"description": "Tweet deletado com sucesso"},
+          "400": {"description": "UUID inválido"},
+          "401": {"description": "Token inválido"},
+          "404": {"description": "Tweet não encontrado"},
+          "500": {"description": "Erro inesperado"}
+        }
+      }
+    },
+    "/like/{tweetId}": {
+      "post": {
+        "tags": ["Likes"],
+        "summary": "Curtir tweet",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "tweetId", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
+        "responses": {
+          "200": {"description": "Tweet curtido com sucesso"},
+          "400": {"description": "Não é possível curtir seu próprio tweet ou UUID inválido"},
+          "401": {"description": "Token inválido"},
+          "404": {"description": "Tweet não encontrado"},
+          "500": {"description": "Erro inesperado"}
+        }
+      }
+    },
+    "/reply/{tweetId}": {
+      "post": {
+        "tags": ["Replies"],
+        "summary": "Criar resposta",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "tweetId", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreateTweet"}}}
+        },
+        "responses": {
+          "200": {"description": "Reply cadastrado com sucesso"},
+          "400": {"description": "Dados inválidos"},
+          "401": {"description": "Token inválido"},
+          "404": {"description": "Tweet original não encontrado"},
+          "500": {"description": "Erro inesperado"}
+        }
+      }
+    },
+    "/reply/{id}": {
+      "delete": {
+        "tags": ["Replies"],
+        "summary": "Apagar resposta",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
+        "responses": {
+          "200": {"description": "Reply deletado com sucesso"},
+          "400": {"description": "UUID inválido"},
+          "401": {"description": "Token inválido"},
+          "404": {"description": "Reply não encontrado"},
+          "500": {"description": "Erro inesperado"}
+        }
+      }
+    },
+    "/follower/follow/{id}": {
+      "post": {
+        "tags": ["Followers"],
+        "summary": "Seguir usuário",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
+        "responses": {
+          "200": {"description": "Seguindo com sucesso"},
+          "400": {"description": "Não é possível seguir a si mesmo ou UUID inválido"},
+          "401": {"description": "Token inválido"},
+          "404": {"description": "Usuário não encontrado"},
+          "500": {"description": "Erro inesperado"}
+        }
+      }
+    },
+    "/follower/unfollow/{id}": {
+      "delete": {
+        "tags": ["Followers"],
+        "summary": "Deixar de seguir usuário",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
+        "responses": {
+          "200": {"description": "Deixou de seguir com sucesso"},
+          "400": {"description": "UUID inválido"},
+          "401": {"description": "Token inválido"},
+          "404": {"description": "Relação não encontrada"},
+          "500": {"description": "Erro inesperado"}
+        }
+      }
+    },
+    "/follower": {
+      "get": {
+        "tags": ["Followers"],
+        "summary": "Listar seguidores do usuário logado",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Lista de seguidores gerada com sucesso"},
+          "401": {"description": "Token inválido"},
+          "500": {"description": "Erro inesperado"}
+        }
+      }
+    },
+    "/follower/following": {
+      "get": {
+        "tags": ["Followers"],
+        "summary": "Listar usuários que o usuário logado segue",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Lista de seguindo gerada com sucesso"},
+          "401": {"description": "Token inválido"},
+          "500": {"description": "Erro inesperado"}
+        }
+      }
+    },
+    "/feed": {
+      "get": {
+        "tags": ["Feed"],
+        "summary": "Mostrar feed",
+        "security": [{"bearerAuth": []}],
         "parameters": [
-          {
-            "in": "params",
-            "name": "id",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define o identificador do tweet"
-          },
-          {
-            "in": "body",
-            "name": "userId",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Define o identificador do usuário logado"
-          }
+          {"name": "limit", "in": "query", "required": false, "schema": {"type": "integer", "example": 10}},
+          {"name": "page", "in": "query", "required": false, "schema": {"type": "integer", "example": 1}}
         ],
         "responses": {
-          "201": {
-            "description": "Json de um tweet",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Tweet deletado com sucesso"
-                    },
-                    "data": {
-                      "type": "object",
-                      "items": {
-                        "$ref": "#/components/schemas/Tweets"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "UUID inválido"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Token inválido"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Tweet não encontrado."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Json",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Ocorreu um erro inesperado."
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "200": {"description": "Feed listado com sucesso"},
+          "401": {"description": "Token inválido"},
+          "500": {"description": "Erro inesperado"}
         }
       }
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
     "schemas": {
+      "CreateUser": {
+        "type": "object",
+        "required": ["name", "email", "username", "password"],
+        "properties": {
+          "name": {"type": "string", "example": "Pedro Henrique"},
+          "email": {"type": "string", "format": "email", "example": "pedro@email.com"},
+          "username": {"type": "string", "example": "pedro"},
+          "password": {"type": "string", "example": "Pedro123"}
+        }
+      },
+      "UpdateUser": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string", "example": "Pedro Henrique Atualizado"},
+          "username": {"type": "string", "example": "pedro2"},
+          "password": {"type": "string", "example": "Pedro1234"}
+        }
+      },
+      "Login": {
+        "type": "object",
+        "required": ["password"],
+        "properties": {
+          "email": {"type": "string", "format": "email", "example": "pedro@email.com"},
+          "username": {"type": "string", "example": "pedro"},
+          "password": {"type": "string", "example": "Pedro123"}
+        }
+      },
+      "CreateTweet": {
+        "type": "object",
+        "required": ["content"],
+        "properties": {
+          "content": {"type": "string", "example": "Meu primeiro tweet pela API!"}
+        }
+      },
+      "UpdateTweet": {
+        "type": "object",
+        "required": ["content"],
+        "properties": {
+          "content": {"type": "string", "example": "Tweet atualizado"}
+        }
+      },
       "User": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "3d0ca315-aff9-4fc2-be61-3b76b9a2d798"
-          },
-          "name": {
-            "type": "string",
-            "example": "João da Silva"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "joao@email.com"
-          },
-          "username": {
-            "type": "string",
-            "example": "joao"
-          },
-          "password": {
-            "type": "string",
-            "example": "$2a$10$3V2CYYmQXyvv3zX8o049HeBT9DLeTcUShIPlRBGVd.NnPfM9T8v4S"
-          }
+          "id": {"type": "string", "format": "uuid", "example": "9affb3d0-5969-4fcb-89c9-707fb5141653"},
+          "name": {"type": "string", "example": "Pedro Henrique"},
+          "email": {"type": "string", "format": "email", "example": "pedro@email.com"},
+          "username": {"type": "string", "example": "pedro"},
+          "createdAt": {"type": "string", "format": "date-time"},
+          "deleted": {"type": "boolean", "example": false}
         }
       },
-      "Tweets": {
+      "Tweet": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "3d0ca315-aff9-4fc2-be61-3b76b9a2d798"
-          },
-          "content": {
-            "type": "string",
-            "example": "Meu primeiro tweet"
-          },
-          "type": {
-            "type": "string",
-            "enum": ["N", "R"],
-            "example": "N"
-          },
-          "userId": {
-            "type": "string",
-            "format": "uuid",
-            "example": "3d0ca315-aff9-4fc2-be61-3b76b9a2d798"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date",
-            "example": "01-01-2024"
-          }
+          "id": {"type": "string", "format": "uuid", "example": "3e082ec4-a335-4401-a45a-1cdc8b89e3b0"},
+          "content": {"type": "string", "example": "Meu primeiro tweet"},
+          "type": {"type": "string", "enum": ["N", "R"], "example": "N"},
+          "userId": {"type": "string", "format": "uuid"},
+          "createdAt": {"type": "string", "format": "date-time"}
         }
       },
       "Pagination": {
         "type": "object",
         "properties": {
-          "limit": {
-            "type": "integer"
-          },
-          "page": {
-            "type": "integer"
-          },
-          "totalPages": {
-            "type": "integer"
-          },
-          "count": {
-            "type": "integer"
-          }
+          "limit": {"type": "integer", "example": 10},
+          "page": {"type": "integer", "example": 1},
+          "totalPages": {"type": "integer", "example": 1},
+          "count": {"type": "integer", "example": 1}
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "ok": {"type": "boolean", "example": false},
+          "message": {"type": "string", "example": "Ocorreu um erro inesperado."}
         }
       }
     }
-  },
-  "security": [
-    "basicAuth"
-  ]
+  }
 }
+
