@@ -12,12 +12,13 @@ import swaggerUI from 'swagger-ui-express';
 import swaggerDoc from './docs/swagger.json';
 
 const app = express();
-app.use(express.json());
-app.use(cors());
 
-app.get('/', (_, res) => {
+app.use(cors());
+app.use(express.json());
+
+app.get("/", (_, res) => {
   res.status(200).json({
-    message: 'Hello Growdever!',
+    message: "Hello Growdever!",
     ok: true,
   });
 });
