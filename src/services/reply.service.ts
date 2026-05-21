@@ -41,25 +41,53 @@ export class ReplyService {
   }
 
   public async deleteReply(input: TweetUser): Promise<Tweet> {
-    const replyFound = await prismaConnection.reply.findFirst({
-      where: { tweetReplyId: input.tweetId },
-    });
+  const replyRelation = await prismaConnection.reply.findFirst({
+    where: {
+      OR: [
+        { id: input.tweetId },
+        { tweetReplyId: input.tweetId },
+      ],
+    },
+  });
 
-    if (!replyFound) throw new HttpError("Reply não encontrado", 404);
-
-    await prismaConnection.reply.delete({
-      where: {
-        id: replyFound.id,
-      },
-    });
-
-    const replyDeleted = await prismaConnection.tweet.delete({
-      where: {
-        id: input.tweetId,
-        AND: { type: "R", userId: input.userId },
-      },
-    });
-
-    return replyDeleted;
+  if (!replyRelation) {
+    throw new HttpError("Reply não encontrado", 404);
   }
+
+  const replyTweet = await prismaConnection.tweet.findFirst({
+    where: {
+      id: replyRelation.tweetReplyId,
+      userId: input.userId,
+      type: "R",
+    },
+  });
+
+  if (!replyTweet) {
+    throw new HttpError("Reply não encontrado", 404);
+  }
+
+  await prismaConnection.reply.deleteMany({
+    where: {
+      OR: [
+        { id: replyRelation.id },
+        { tweetReplyId: replyRelation.tweetReplyId },
+        { tweetOriginalId: replyRelation.tweetReplyId },
+      ],
+    },
+  });
+
+  await prismaConnection.like.deleteMany({
+    where: {
+      tweetId: replyRelation.tweetReplyId,
+    },
+  });
+
+  const replyDeleted = await prismaConnection.tweet.delete({
+    where: {
+      id: replyRelation.tweetReplyId,
+    },
+  });
+
+  return replyDeleted;
+}
 }

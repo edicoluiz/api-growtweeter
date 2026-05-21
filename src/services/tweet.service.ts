@@ -15,8 +15,9 @@ export class TweetService {
       },
     });
 
-    return data
+    return data;
   }
+
   public async listTweets(input: ListTweetDTO): Promise<any> {
     let limitDefault = 10;
     let pageDefault = 1;
@@ -29,26 +30,55 @@ export class TweetService {
       pageDefault = Number(input.page);
     }
 
+    const filter = {
+  type: "N" as const,
+  OR: [
+    {
+      userId: input.userId,
+    },
+    {
+      user: {
+        following: {
+          some: {
+            followerId: input.userId,
+          },
+        },
+      },
+    },
+  ],
+};
+
     const tweets = await prismaConnection.tweet.findMany({
       skip: limitDefault * (pageDefault - 1),
       take: limitDefault,
-      orderBy: { createdAt: "desc" },
-      where: {
-        userId: input.userId,
+      orderBy: {
+        createdAt: "desc",
       },
+      where: filter,
       include: {
-        _count: { select: { like: true, reply: true } },
+        user: true,
+        like: true,
+        reply: {
+          include: {
+            reply: {
+              include: {
+                user: true,
+                like: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            like: true,
+            reply: true,
+          },
+        },
       },
-    });
-
-    const tweetsLiked = await prismaConnection.like.findMany({
-      where: { tweet: { id: input.userId } },
     });
 
     const count = await prismaConnection.tweet.count({
-      where: {
-        userId: input.userId,
-      },
+      where: filter,
     });
 
     return {
@@ -62,18 +92,25 @@ export class TweetService {
     };
   }
 
-  public async updateTweets(input: updateTweetDTO): Promise<Tweet> {
-    const tweetBelongsUser = await prismaConnection.tweet.findFirst({
-      where: {
-        id: input.tweetId,
-        userId: input.userId,
-      },
-    });
+  public async updateTweets(
+    input: updateTweetDTO
+  ): Promise<Tweet> {
+    const tweetBelongsUser =
+      await prismaConnection.tweet.findFirst({
+        where: {
+          id: input.tweetId,
+          userId: input.userId,
+        },
+      });
 
-    if (!tweetBelongsUser) throw new HttpError("Tweet não encontrado", 404);
+    if (!tweetBelongsUser) {
+      throw new HttpError("Tweet não encontrado", 404);
+    }
 
     const data = await prismaConnection.tweet.update({
-      where: { id: input.tweetId },
+      where: {
+        id: input.tweetId,
+      },
       data: {
         content: input.content,
       },
@@ -82,22 +119,68 @@ export class TweetService {
     return data;
   }
 
-  public async deleteTweets(input: TweetUser): Promise<Tweet> {
-    const tweetBelongsUser = await prismaConnection.tweet.findFirst({
-      where: {
-        id: input.tweetId,
-        userId: input.userId,
-      },
-    });
+ public async deleteTweets(input: TweetUser): Promise<Tweet> {
+  const tweetBelongsUser = await prismaConnection.tweet.findFirst({
+    where: {
+      id: input.tweetId,
+      userId: input.userId,
+    },
+  });
 
-    if (!tweetBelongsUser) throw new HttpError("Tweet não encontrado", 404);
-
-    const data = await prismaConnection.tweet.delete({
-      where: {
-        id: input.tweetId,
-      },
-    });
-
-    return data;
+  if (!tweetBelongsUser) {
+    throw new HttpError("Tweet não encontrado", 404);
   }
+
+  await prismaConnection.like.deleteMany({
+    where: {
+      tweetId: input.tweetId,
+    },
+  });
+
+  const replies = await prismaConnection.reply.findMany({
+    where: {
+      tweetOriginalId: input.tweetId,
+    },
+  });
+
+  for (const reply of replies) {
+    await prismaConnection.like.deleteMany({
+      where: {
+        tweetId: reply.tweetReplyId,
+      },
+    });
+
+    await prismaConnection.reply.deleteMany({
+      where: {
+        OR: [
+          { tweetReplyId: reply.tweetReplyId },
+          { tweetOriginalId: reply.tweetReplyId },
+        ],
+      },
+    });
+
+    await prismaConnection.tweet.deleteMany({
+      where: {
+        id: reply.tweetReplyId,
+      },
+    });
+  }
+
+  await prismaConnection.reply.deleteMany({
+    where: {
+      OR: [
+        { tweetOriginalId: input.tweetId },
+        { tweetReplyId: input.tweetId },
+      ],
+    },
+  });
+
+  const data = await prismaConnection.tweet.delete({
+    where: {
+      id: input.tweetId,
+    },
+  });
+
+  return data;
+}
 }

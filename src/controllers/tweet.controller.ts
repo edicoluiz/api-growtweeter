@@ -36,7 +36,7 @@ export class TweetController {
         ok: true,
         message: "Tweets listados com sucesso",
         user: user,
-        tweets: listTweets.tweet,
+        tweets: listTweets,
         pagination: listTweets.pagination,
       });
     } catch (err) {
