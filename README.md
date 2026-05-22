@@ -1,17 +1,134 @@
-## Documentação da API
+# API GrowTweeter
 
-A documentação completa da API pode ser acessada no link abaixo no Postman:
+API REST desenvolvida com Node.js, TypeScript, Express, Prisma ORM e PostgreSQL.
 
-<a href="https://restless-resonance-7295629.postman.co/workspace/%C3%89dico-Lu%C3%ADz-Dewes's-Workspace~905e95c0-6b69-4ae8-82b6-70e604987274/collection/46315683-8aec7298-4116-4171-90f5-13cffe9bcc2a?action=share&source=copy-link&creator=46315683" target="_blank">Link</a>
+## Tecnologias Utilizadas
 
-# API GrowTwitter
+- Node.js
+- TypeScript
+- Express.js
+- Prisma ORM
+- PostgreSQL (Neon)
+- JWT Authentication
+- Bcrypt
+- Swagger/OpenAPI
+- Render
 
-API REST com Node.js, Express, Prisma e PostgreSQL
+---
+
+## Deploy
+
+API Online:
+
+https://api-growtweeter-edicodewes3.onrender.com
+
+Swagger:
+
+https://api-growtweeter-edicodewes3.onrender.com/docs
+
+---
 
 ## Funcionalidades
-- Cadastro e login
-- Tweets
-- Likes
-- Replies
-- Followers
 
+### Usuários
+- Criar usuário
+- Listar usuários
+- Atualizar usuário
+- Excluir usuário
+
+### Autenticação
+- Login com username/email e senha
+- Geração de JWT
+
+### Tweets
+- Criar tweet
+- Listar tweets
+- Feed paginado
+
+### Curtidas
+- Curtir tweet
+- Remover curtida
+
+### Respostas
+- Responder tweets
+- Listar respostas
+
+### Seguidores
+- Seguir usuários
+- Deixar de seguir usuários
+- Listar seguidores
+- Listar seguindo
+
+---
+
+## Usuários para Teste
+
+### Ana Costa
+Usuário: anacosta
+
+Senha: Ana12345
+
+### Pedro Henrique
+Usuário: pedro
+
+Senha: Pedro123
+---
+
+## Endpoints Principais
+
+| Método | Endpoint |
+|----------|----------|
+| POST | /auth/signin |
+| GET | /user |
+| POST | /user |
+| POST | /tweet |
+| GET | /feed |
+| POST | /like |
+| POST | /reply |
+| POST | /follower |
+
+---
+
+## Executando Localmente
+
+Instalar dependências:
+
+```bash
+npm install
+```
+
+Configurar arquivo `.env`:
+
+```env
+DATABASE_URL=
+JWT_SECRET=
+JWT_EXPIRES_IN=
+BCRYPT_SALT=
+PORT=3000
+```
+
+Executar migrações:
+
+```bash
+npx prisma migrate deploy
+```
+
+Gerar cliente Prisma:
+
+```bash
+npx prisma generate
+```
+
+Iniciar servidor:
+
+```bash
+npm run dev
+```
+
+---
+
+## Autor
+
+Édico Luiz Dewes
+
+Projeto desenvolvido para o desafio Growdev - GrowTweeter.
